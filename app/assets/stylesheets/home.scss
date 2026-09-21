@@ -254,9 +254,11 @@ dl.faq {
 }
 
 // Promo blocks displayed next to the welcome section (see
-// `home_page.promo_blocks_next_to_welcome`).
-.promo-welcome-row {
-  > div {
+// `home_page.promo_blocks_next_to_welcome`). Themes are free to style the
+// `.tesshub-front` wrapper itself (background, full-bleed width, etc.);
+// these rules only provide the side-by-side layout.
+.tesshub-front {
+  > .row > div {
     display: flex;
     flex-direction: column;
     justify-content: center;

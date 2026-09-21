@@ -267,7 +267,7 @@ class StaticControllerTest < ActionController::TestCase
     # not configured: promo blocks shown at the bottom, as before
     with_settings({ site: site_settings }) do
       get :home
-      assert_select 'div.promo-welcome-row', count: 0
+      assert_select 'div.tesshub-front', count: 0
       assert_select 'section#welcome_text', count: 1
       assert_select 'ul#promo-blocks', count: 1
     end
@@ -276,8 +276,8 @@ class StaticControllerTest < ActionController::TestCase
     site_settings['home_page']['promo_blocks_next_to_welcome'] = true
     with_settings({ site: site_settings }) do
       get :home
-      assert_select 'div.promo-welcome-row', count: 1
-      assert_select 'div.promo-welcome-row' do
+      assert_select 'div.tesshub-front', count: 1
+      assert_select 'div.tesshub-front' do
         assert_select 'section#welcome_text', count: 1
         assert_select 'ul#promo-blocks', count: 1
       end
@@ -290,8 +290,8 @@ class StaticControllerTest < ActionController::TestCase
     with_settings({ site: site_settings }) do
       with_host(plant_space.host) do
         get :home
-        assert_select 'div.promo-welcome-row', count: 1
-        assert_select 'div.promo-welcome-row' do
+        assert_select 'div.tesshub-front', count: 1
+        assert_select 'div.tesshub-front' do
           assert_select 'section#space_welcome_text', count: 1
           assert_select 'ul#promo-blocks', count: 1
         end
@@ -303,7 +303,7 @@ class StaticControllerTest < ActionController::TestCase
     site_settings['home_page']['promo_blocks'] = false
     with_settings({ site: site_settings }) do
       get :home
-      assert_select 'div.promo-welcome-row', count: 0
+      assert_select 'div.tesshub-front', count: 0
       assert_select 'ul#promo-blocks', count: 0
       assert_select 'section#welcome_text', count: 1
     end

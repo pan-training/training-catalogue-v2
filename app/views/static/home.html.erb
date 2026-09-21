@@ -28,12 +28,14 @@
   <%= render partial: 'communities/banner' if TeSS::Config.site.dig('home_page', 'communities') %>
 
   <% if promo_side_by_side %>
-    <div class="row promo-welcome-row">
-      <div class="col-md-8">
-        <%= render partial: 'static/home/welcome' %>
-      </div>
-      <div class="col-md-4">
-        <%= render partial: 'static/home/promo_blocks' %>
+    <div class="tesshub-front">
+      <div class="row">
+        <div class="col-md-8">
+          <%= render partial: 'static/home/welcome' %>
+        </div>
+        <div class="col-md-4">
+          <%= render partial: 'static/home/promo_blocks' %>
+        </div>
       </div>
     </div>
   <% else %>
@@ -53,12 +55,14 @@
   <%= render partial: 'static/home/faq' if TeSS::Config.site.dig('home_page', 'faq')&.any? %>
 <% else %>
   <% if promo_side_by_side %>
-    <div class="row promo-welcome-row">
-      <div class="col-md-8">
-        <%= render partial: 'static/home/space_welcome' %>
-      </div>
-      <div class="col-md-4">
-        <%= render partial: 'static/home/promo_blocks' %>
+    <div class="tesshub-front">
+      <div class="row">
+        <div class="col-md-8">
+          <%= render partial: 'static/home/space_welcome' %>
+        </div>
+        <div class="col-md-4">
+          <%= render partial: 'static/home/promo_blocks' %>
+        </div>
       </div>
     </div>
   <% else %>
