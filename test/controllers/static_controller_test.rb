@@ -989,4 +989,58 @@ class StaticControllerTest < ActionController::TestCase
     get :home
     assert_select 'head title', text: 'TeSS Test Instance'
   end
+
+  test 'should allow space specific configuration of other home page sections' do
+    plant_space = spaces(:plants)
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': false,
+      'provider_carousel': false,
+      'provider_grid': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': false,
+      'search_box': false
+    }
+
+    # true: default space only (backwards compatible)
+    site_settings['home_page']['catalogue_blocks'] = true
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue', count: 1
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'section#catalogue', count: 0
+      end
+    end
+
+    # list: show in the listed spaces too
+    site_settings['home_page']['catalogue_blocks'] = [plant_space.host]
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue', count: 0
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'section#catalogue', count: 1
+      end
+    end
+
+    site_settings['home_page']['provider_carousel'] = [plant_space.host]
+    site_settings['home_page']['featured_providers'] = [content_providers(:goblet)]
+    site_settings['home_page']['faq'] = %w[who why]
+    site_settings['home_page']['faq_enabled'] = [plant_space.host]
+    with_settings({ site: site_settings }) do
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'section#providers', count: 1
+        assert_select 'section#faq', count: 1
+      end
+
+      get :home
+      assert_select 'section#providers', count: 0
+      assert_select 'section#faq', count: 0
+    end
+  end
 end

@@ -23,54 +23,42 @@
 </script>
 
 <% promo_side_by_side = home_page_section_enabled?('promo_blocks') && promo_blocks_next_to_welcome? %>
+<% welcome_partial = current_space.default? ? 'static/home/welcome' : 'static/home/space_welcome' %>
 
-<% if current_space.default? %>
-  <%= render partial: 'communities/banner' if TeSS::Config.site.dig('home_page', 'communities') %>
+<%= render partial: 'communities/banner' if current_space.default? && TeSS::Config.site.dig('home_page', 'communities') %>
 
-  <% if promo_side_by_side %>
-    <div class="tesshub-front">
-      <div class="row">
-        <div class="col-md-8">
-          <%= render partial: 'static/home/welcome' %>
-        </div>
-        <div class="col-md-4">
-          <%= render partial: 'static/home/promo_blocks' %>
-        </div>
+<% if promo_side_by_side %>
+  <div class="tesshub-front">
+    <div class="row">
+      <div class="col-md-8">
+        <%= render partial: welcome_partial %>
+      </div>
+      <div class="col-md-4">
+        <%= render partial: 'static/home/promo_blocks' %>
       </div>
     </div>
-  <% else %>
-    <%= render partial: 'static/home/welcome' %>
-  <% end %>
-
-  <%= render partial: 'static/home/additional_links' if TeSS::Config.site.dig('home_page', 'additional_links') %>
-
-  <%= render partial: 'static/home/counters' if home_page_section_enabled?('counters') %>
-
-  <%= render partial: 'static/home/catalogue_blocks' if home_page_section_enabled?('catalogue_blocks') %>
-
-  <%= render partial: 'static/home/provider_carousel' if home_page_section_enabled?('provider_carousel') %>
-
-  <%= render partial: 'static/home/provider_grid' if home_page_section_enabled?('provider_grid') %>
-
-  <%= render partial: 'static/home/faq' if home_page_section_enabled?('faq') && TeSS::Config.site.dig('home_page', 'faq')&.any? %>
+  </div>
 <% else %>
-  <% if promo_side_by_side %>
-    <div class="tesshub-front">
-      <div class="row">
-        <div class="col-md-8">
-          <%= render partial: 'static/home/space_welcome' %>
-        </div>
-        <div class="col-md-4">
-          <%= render partial: 'static/home/promo_blocks' %>
-        </div>
-      </div>
-    </div>
-  <% else %>
-    <%= render partial: 'static/home/space_welcome' %>
-  <% end %>
-
-  <%= render partial: 'static/home/counters', locals: { features: ['events', 'materials', 'workflows', 'learning_paths'] } if home_page_section_enabled?('counters') %>
+  <%= render partial: welcome_partial %>
 <% end %>
+
+<%= render partial: 'static/home/additional_links' if current_space.default? && TeSS::Config.site.dig('home_page', 'additional_links') %>
+
+<% if home_page_section_enabled?('counters') %>
+  <% if current_space.default? %>
+    <%= render partial: 'static/home/counters' %>
+  <% else %>
+    <%= render partial: 'static/home/counters', locals: { features: ['events', 'materials', 'workflows', 'learning_paths'] } %>
+  <% end %>
+<% end %>
+
+<%= render partial: 'static/home/catalogue_blocks' if home_page_section_enabled?('catalogue_blocks') %>
+
+<%= render partial: 'static/home/provider_carousel' if home_page_section_enabled?('provider_carousel') %>
+
+<%= render partial: 'static/home/provider_grid' if home_page_section_enabled?('provider_grid') %>
+
+<%= render partial: 'static/home/faq' if home_page_section_enabled?('faq') && TeSS::Config.site.dig('home_page', 'faq')&.any? %>
 
 <%= render partial: 'static/home/promo_blocks' if home_page_section_enabled?('promo_blocks') && !promo_side_by_side %>
 
