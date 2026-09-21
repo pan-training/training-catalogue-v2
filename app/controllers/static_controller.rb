@@ -1,5 +1,7 @@
 # The controller for actions related to home page
 class StaticController < ApplicationController
+  include StaticHelper
+
   skip_before_action :authenticate_user!, :authenticate_user_from_token!
 
   def privacy; end
@@ -50,7 +52,7 @@ class StaticController < ApplicationController
 
   def set_latest_materials
     n_materials = TeSS::Config.site.dig('home_page', 'latest_materials')
-    return [] unless n_materials
+    return [] unless home_page_section_enabled?('latest_materials', n_materials) && n_materials.present?
 
     Material.search_and_filter(
       nil,
@@ -63,7 +65,7 @@ class StaticController < ApplicationController
 
   def set_upcoming_events
     n_events = TeSS::Config.site.dig('home_page', 'upcoming_events')
-    return [] unless n_events
+    return [] unless home_page_section_enabled?('upcoming_events', n_events) && n_events.present?
 
     Event.search_and_filter(
       nil,
@@ -76,7 +78,7 @@ class StaticController < ApplicationController
 
   def set_count_strings
     count_strings = {}
-    return count_strings if Space.current_space.default? && !TeSS::Config.site.dig('home_page', 'counters')
+    return count_strings unless home_page_section_enabled?('counters')
 
     count_strings['events'] = Space.current_space.events.where.not(end: nil).where('events.end > ?', Time.zone.now).count
     count_strings['last_month_events'] = Space.current_space.events.where('events.created_at > ?', 1.month.ago).count

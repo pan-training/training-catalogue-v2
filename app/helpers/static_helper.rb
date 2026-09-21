@@ -33,19 +33,62 @@ module StaticHelper
     TeSS::Config.site.dig('home_page', 'promo_blocks_next_to_welcome') == true
   end
 
-  # Determines whether the home page promo blocks should be shown for the
-  # current space. The `home_page.promo_blocks` config accepts:
-  #   - true:  show in the default space only (backwards compatible)
-  #   - false: never show
-  #   - a list of space identifiers (e.g. ['default', 'plants.mytess.training']):
-  #     show when the current space is in the list. Use 'default' for the
-  #     default space.
-  def promo_blocks_enabled?
-    config = TeSS::Config.site.dig('home_page', 'promo_blocks')
-    return false if config.blank?
-    return current_space.default? if config == true
+  HOME_PAGE_SECTION_DEFAULTS = {
+    'catalogue_blocks' => { default_space_only: true },
+    'provider_carousel' => { default_space_only: true },
+    'provider_grid' => { default_space_only: true },
+    'faq' => { default_space_only: true, content: true },
+    'promo_blocks' => { default_space_only: true },
+    'upcoming_events' => { default_space_only: false, content: true },
+    'latest_materials' => { default_space_only: false, content: true },
+    'counters' => { default_space_only: false },
+    'search_box' => { default_space_only: false }
+  }.freeze
 
-    space_string = current_space.default? ? 'default' : current_space.host
-    Array(config).include?(space_string)
+  # Evaluates a home page setting that can be either a boolean or a list of
+  # spaces. The list is interpreted as:
+  #   - [true, 'space.example.com'] => show everywhere except on that space
+  #   - [false, 'space.example.com'] => show only on that space
+  #   - ['space.example.com'] => show only on that space
+  #   - true => preserves the section's legacy meaning for backwards compatibility
+  #   - false => never show
+  def home_page_space_config_enabled?(config, default_space_only: false)
+    return false if config.nil?
+    return (default_space_only ? current_space.default? : true) if config == true
+    return false if config == false
+
+    values = Array(config).map { |value| value.to_s.strip }
+    return false if values.empty?
+
+    default_value = %w[true false].include?(values.first) ? values.first == 'true' : false
+    current_identifier = current_space.default? ? 'default' : current_space.host
+    space_values = default_value ? values.drop(1) : values
+
+    default_value ? !space_values.include?(current_identifier) : space_values.include?(current_identifier)
+  end
+
+  # A single place to determine whether a home page section should be shown.
+  # Separate *_enabled settings take precedence when present, while older values
+  # retain their original backwards-compatible meaning.
+  def home_page_section_enabled?(setting_name, value = nil, default_space_only: nil)
+    setting = HOME_PAGE_SECTION_DEFAULTS.fetch(setting_name.to_s, {})
+    default_space_only = setting.fetch(:default_space_only, false) if default_space_only.nil?
+
+    enabled = TeSS::Config.site.dig('home_page', "#{setting_name}_enabled")
+    return home_page_space_config_enabled?(enabled, default_space_only: default_space_only) unless enabled.nil?
+
+    config = value.nil? ? TeSS::Config.site.dig('home_page', setting_name) : value
+    return false if config.nil?
+
+    if setting[:content]
+      return false if config.blank?
+      return default_space_only ? current_space.default? : true
+    end
+
+    if config == true || config == false || config.is_a?(Array)
+      return home_page_space_config_enabled?(config, default_space_only: default_space_only)
+    end
+
+    default_space_only ? current_space.default? && config.present? : config.present?
   end
 end

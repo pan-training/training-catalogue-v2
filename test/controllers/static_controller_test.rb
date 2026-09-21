@@ -931,8 +931,10 @@ class StaticControllerTest < ActionController::TestCase
     space.disabled_features = ['materials']
     space.save!
 
-    with_host('plants.mytess.training') do
-      get :home
+    with_settings({ site: { home_page: { counters: true } } }) do
+      with_host('plants.mytess.training') do
+        get :home
+      end
     end
 
     assert_select '.resource-counter a[href=?]', materials_path, count: 0

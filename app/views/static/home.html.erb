@@ -22,7 +22,7 @@
 }
 </script>
 
-<% promo_side_by_side = promo_blocks_enabled? && promo_blocks_next_to_welcome? %>
+<% promo_side_by_side = home_page_section_enabled?('promo_blocks') && promo_blocks_next_to_welcome? %>
 
 <% if current_space.default? %>
   <%= render partial: 'communities/banner' if TeSS::Config.site.dig('home_page', 'communities') %>
@@ -44,15 +44,15 @@
 
   <%= render partial: 'static/home/additional_links' if TeSS::Config.site.dig('home_page', 'additional_links') %>
 
-  <%= render partial: 'static/home/counters' if TeSS::Config.site.dig('home_page', 'counters') %>
+  <%= render partial: 'static/home/counters' if home_page_section_enabled?('counters') %>
 
-  <%= render partial: 'static/home/catalogue_blocks' if TeSS::Config.site.dig('home_page', 'catalogue_blocks') %>
+  <%= render partial: 'static/home/catalogue_blocks' if home_page_section_enabled?('catalogue_blocks') %>
 
-  <%= render partial: 'static/home/provider_carousel' if TeSS::Config.site.dig('home_page', 'provider_carousel') %>
+  <%= render partial: 'static/home/provider_carousel' if home_page_section_enabled?('provider_carousel') %>
 
-  <%= render partial: 'static/home/provider_grid' if TeSS::Config.site.dig('home_page', 'provider_grid') %>
+  <%= render partial: 'static/home/provider_grid' if home_page_section_enabled?('provider_grid') %>
 
-  <%= render partial: 'static/home/faq' if TeSS::Config.site.dig('home_page', 'faq')&.any? %>
+  <%= render partial: 'static/home/faq' if home_page_section_enabled?('faq') && TeSS::Config.site.dig('home_page', 'faq')&.any? %>
 <% else %>
   <% if promo_side_by_side %>
     <div class="tesshub-front">
@@ -69,10 +69,10 @@
     <%= render partial: 'static/home/space_welcome' %>
   <% end %>
 
-  <%= render partial: 'static/home/counters', locals: { features: ['events', 'materials', 'workflows', 'learning_paths'] } %>
+  <%= render partial: 'static/home/counters', locals: { features: ['events', 'materials', 'workflows', 'learning_paths'] } if home_page_section_enabled?('counters') %>
 <% end %>
 
-<%= render partial: 'static/home/promo_blocks' if promo_blocks_enabled? && !promo_side_by_side %>
+<%= render partial: 'static/home/promo_blocks' if home_page_section_enabled?('promo_blocks') && !promo_side_by_side %>
 
 <%= render partial: 'static/home/upcoming_events' if @events.present? %>
 

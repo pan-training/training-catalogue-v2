@@ -100,6 +100,15 @@ default: &default
     supported_by: 'elixir_supported_by'
     widget_example:
     home_page: # Configuration for the sections displayed on the front page
+      # Space-aware boolean settings support:
+      #   true: keep the legacy behaviour for this setting
+      #   false: disable for all spaces
+      #   [true, 'example.tesshub.org']: show everywhere except on that space
+      #   [false, 'example.tesshub.org']: show only on that space
+      #   ['example.tesshub.org']: show only on that space
+      #   'default' means the default space
+      # Non-boolean values may use a matching *_enabled setting to control space
+      # visibility while keeping the original value format.
       catalogue_blocks: true
       provider_grid: false
       provider_carousel: true
@@ -107,7 +116,7 @@ default: &default
       featured_providers: # e.g. [123, 5, 10, 1]
       faq: # [who, how, why, embed, subscribe] # Questions/answers in config/en.yml: home > faq. Use empty array to hide section
       # Show the promo blocks on the home page.
-      #   true:  show in the default space only
+      #   true: show in the default space only (legacy behaviour)
       #   false: never show
       #   a list of spaces (e.g. ['default', 'plants.mytess.training']): show when the current space is in the list
       promo_blocks: false
