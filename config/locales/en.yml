@@ -533,6 +533,15 @@ en:
       domain:
         title: "Life sciences focused"
         description: "For the entire life sciences workforce"
+      browse_space:
+        title: "Browse community-managed spaces"
+        description: "Discover curated catalogues of training from multiple scientific disciplines and communities."
+      create_space:
+        title: "Onboard your community"
+        description: "Establish a new training catalogue to support your own community."
+      search:
+        title: "Cross-space search"
+        description: "Search and browse across all TeSSHub spaces from a unified interface."
     faq:
       title: Frequently asked questions
       who:

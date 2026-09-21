@@ -106,7 +106,15 @@ default: &default
       # A list of content provider IDs to show in the front page carousel. Leave blank to show latest 5 (that have avatars set)
       featured_providers: # e.g. [123, 5, 10, 1]
       faq: # [who, how, why, embed, subscribe] # Questions/answers in config/en.yml: home > faq. Use empty array to hide section
+      # Show the promo blocks on the home page.
+      #   true:  show in the default space only
+      #   false: never show
+      #   a list of spaces (e.g. ['default', 'plants.mytess.training']): show when the current space is in the list
       promo_blocks: false
+      # Which promo blocks to show (when promo_blocks is enabled for the current space).
+      # Available blocks: nonprofit, community, sustainable, domain, browse_space, create_space, search
+      # Leave blank to show the default blocks (nonprofit, community, sustainable, domain).
+      promo_blocks_list: # e.g. ['nonprofit', 'community', 'browse_space']
       upcoming_events: # Number of events on home page. Leave blank to turn off
       latest_materials: # Number of materials on home page. Leave blank to turn off
       featured_trainer: false

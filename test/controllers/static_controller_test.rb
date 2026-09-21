@@ -145,6 +145,113 @@ class StaticControllerTest < ActionController::TestCase
     end
   end
 
+  test 'should allow space specific configuration of promo blocks' do
+    plant_space = spaces(:plants)
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': false,
+      'provider_carousel': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': false,
+      'search_box': false
+    }
+
+    # true: show in the default space only (backwards compatible)
+    site_settings['home_page']['promo_blocks'] = true
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'ul#promo-blocks', count: 0
+      end
+    end
+
+    # false: never show
+    site_settings['home_page']['promo_blocks'] = false
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 0
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'ul#promo-blocks', count: 0
+      end
+    end
+
+    # list: show only when the current space is in the list
+    site_settings['home_page']['promo_blocks'] = ['default', plant_space.host]
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'ul#promo-blocks', count: 1
+      end
+    end
+
+    # list without the current space: not shown
+    site_settings['home_page']['promo_blocks'] = ['default']
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'ul#promo-blocks', count: 0
+      end
+    end
+  end
+
+  test 'should allow configuration of which promo blocks are shown' do
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': false,
+      'provider_carousel': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': true,
+      'search_box': false
+    }
+
+    # no promo_blocks_list: show the default blocks
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+      assert_select 'ul#promo-blocks li', count: 4
+    end
+
+    # custom list: show only the selected blocks
+    site_settings['home_page']['promo_blocks_list'] = ['nonprofit', 'browse_space']
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+      assert_select 'ul#promo-blocks li', count: 2
+      assert_select 'ul#promo-blocks li h4', I18n.t('home.promo.nonprofit.title')
+      assert_select 'ul#promo-blocks li h4', I18n.t('home.promo.browse_space.title')
+    end
+
+    # unknown blocks are ignored
+    site_settings['home_page']['promo_blocks_list'] = ['nonprofit', 'does_not_exist']
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+      assert_select 'ul#promo-blocks li', count: 1
+    end
+
+    # list is applied together with the space-specific promo_blocks setting
+    site_settings['home_page']['promo_blocks'] = ['default']
+    site_settings['home_page']['promo_blocks_list'] = ['nonprofit', 'browse_space']
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'ul#promo-blocks', count: 1
+      assert_select 'ul#promo-blocks li', count: 2
+    end
+  end
+
   test 'should allow configuration of tab order and directory' do
     features = { 'events': true,
                  'materials': true,
