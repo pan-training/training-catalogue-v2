@@ -22,10 +22,23 @@
 }
 </script>
 
+<% promo_side_by_side = promo_blocks_enabled? && promo_blocks_next_to_welcome? %>
+
 <% if current_space.default? %>
   <%= render partial: 'communities/banner' if TeSS::Config.site.dig('home_page', 'communities') %>
 
-  <%= render partial: 'static/home/welcome' %>
+  <% if promo_side_by_side %>
+    <div class="row promo-welcome-row">
+      <div class="col-md-8">
+        <%= render partial: 'static/home/welcome' %>
+      </div>
+      <div class="col-md-4">
+        <%= render partial: 'static/home/promo_blocks' %>
+      </div>
+    </div>
+  <% else %>
+    <%= render partial: 'static/home/welcome' %>
+  <% end %>
 
   <%= render partial: 'static/home/additional_links' if TeSS::Config.site.dig('home_page', 'additional_links') %>
 
@@ -39,12 +52,23 @@
 
   <%= render partial: 'static/home/faq' if TeSS::Config.site.dig('home_page', 'faq')&.any? %>
 <% else %>
-  <%= render partial: 'static/home/space_welcome' %>
+  <% if promo_side_by_side %>
+    <div class="row promo-welcome-row">
+      <div class="col-md-8">
+        <%= render partial: 'static/home/space_welcome' %>
+      </div>
+      <div class="col-md-4">
+        <%= render partial: 'static/home/promo_blocks' %>
+      </div>
+    </div>
+  <% else %>
+    <%= render partial: 'static/home/space_welcome' %>
+  <% end %>
 
   <%= render partial: 'static/home/counters', locals: { features: ['events', 'materials', 'workflows', 'learning_paths'] } %>
 <% end %>
 
-<%= render partial: 'static/home/promo_blocks' if promo_blocks_enabled? %>
+<%= render partial: 'static/home/promo_blocks' if promo_blocks_enabled? && !promo_side_by_side %>
 
 <%= render partial: 'static/home/upcoming_events' if @events.present? %>
 

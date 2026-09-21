@@ -252,6 +252,63 @@ class StaticControllerTest < ActionController::TestCase
     end
   end
 
+  test 'should show promo blocks next to the welcome section when configured' do
+    plant_space = spaces(:plants)
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': false,
+      'provider_carousel': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': true,
+      'search_box': false
+    }
+
+    # not configured: promo blocks shown at the bottom, as before
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'div.promo-welcome-row', count: 0
+      assert_select 'section#welcome_text', count: 1
+      assert_select 'ul#promo-blocks', count: 1
+    end
+
+    # enabled on the default space: promo blocks next to the welcome text
+    site_settings['home_page']['promo_blocks_next_to_welcome'] = true
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'div.promo-welcome-row', count: 1
+      assert_select 'div.promo-welcome-row' do
+        assert_select 'section#welcome_text', count: 1
+        assert_select 'ul#promo-blocks', count: 1
+      end
+      # only rendered once
+      assert_select 'ul#promo-blocks', count: 1
+    end
+
+    # enabled for a non-default space: promo blocks next to the space welcome text
+    site_settings['home_page']['promo_blocks'] = [plant_space.host]
+    with_settings({ site: site_settings }) do
+      with_host(plant_space.host) do
+        get :home
+        assert_select 'div.promo-welcome-row', count: 1
+        assert_select 'div.promo-welcome-row' do
+          assert_select 'section#space_welcome_text', count: 1
+          assert_select 'ul#promo-blocks', count: 1
+        end
+        assert_select 'ul#promo-blocks', count: 1
+      end
+    end
+
+    # promo blocks disabled for the space: no side-by-side row either
+    site_settings['home_page']['promo_blocks'] = false
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'div.promo-welcome-row', count: 0
+      assert_select 'ul#promo-blocks', count: 0
+      assert_select 'section#welcome_text', count: 1
+    end
+  end
+
   test 'should allow configuration of tab order and directory' do
     features = { 'events': true,
                  'materials': true,

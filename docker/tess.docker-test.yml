@@ -41,6 +41,8 @@ default: &default
       # Which promo blocks to show (when promo_blocks is enabled).
       # Available blocks: nonprofit, community, sustainable, domain, browse_space, create_space, search
       promo_blocks_list:
+      # Show the promo blocks next to the welcome text instead of below the other sections.
+      promo_blocks_next_to_welcome: false
     # The order in which the tabs appear (if feature enabled)
     tab_order: ['about', 'events', 'materials', 'elearning_materials', 'workflows', 'collections', 'trainers', 'content_providers', 'nodes']
     # The tabs that should be collapsed under the "Directory" tab. Can be left blank to hide it.

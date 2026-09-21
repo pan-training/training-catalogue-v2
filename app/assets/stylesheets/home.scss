@@ -253,6 +253,27 @@ dl.faq {
   }
 }
 
+// Promo blocks displayed next to the welcome section (see
+// `home_page.promo_blocks_next_to_welcome`).
+.promo-welcome-row {
+  > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  ul.promo-blocks {
+    margin-top: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+
+    li {
+      width: 100%;
+    }
+  }
+}
+
 ul.promo-blocks {
   padding: 10px 0;
   margin: 0 -10px;
