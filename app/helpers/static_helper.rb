@@ -33,6 +33,25 @@ module StaticHelper
     TeSS::Config.site.dig('home_page', 'promo_blocks_next_to_welcome') == true
   end
 
+  # The catalogue blocks that can be shown on the home page. Each key is a
+  # resource type with a matching icon, `home.catalogue.<key>` description and
+  # `features.<key>.long` title.
+  CATALOGUE_BLOCKS = %w[events materials learning_paths trainers spaces workflows].freeze
+
+  # The catalogue blocks shown when `home_page.catalogue_blocks_list` is not set.
+  DEFAULT_CATALOGUE_BLOCKS = %w[events materials learning_paths trainers].freeze
+
+  # The list of catalogue blocks to show on the home page, based on the
+  # `home_page.catalogue_blocks_list` config. Blocks are shown in the configured
+  # order; unknown keys are ignored, as are blocks whose feature is not enabled.
+  # Defaults to the original four blocks when the setting is not present.
+  def catalogue_blocks_list
+    configured = TeSS::Config.site.dig('home_page', 'catalogue_blocks_list')
+    configured = DEFAULT_CATALOGUE_BLOCKS if configured.blank?
+
+    configured.select { |key| CATALOGUE_BLOCKS.include?(key) && feature_enabled?(key) }
+  end
+
   HOME_PAGE_SECTION_DEFAULTS = {
     'catalogue_blocks' => { default_space_only: true },
     'provider_carousel' => { default_space_only: true },

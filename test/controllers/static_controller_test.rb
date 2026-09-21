@@ -252,6 +252,51 @@ class StaticControllerTest < ActionController::TestCase
     end
   end
 
+  test 'should allow configuration of which catalogue blocks are shown' do
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': true,
+      'provider_carousel': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': false,
+      'search_box': false
+    }
+
+    # no catalogue_blocks_list: show the default blocks
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue ul.catalogue', count: 1
+      assert_select 'section#catalogue ul.catalogue li', count: 4
+      assert_select 'section#catalogue h3', text: I18n.t('features.learning_paths.long').titleize
+    end
+
+    # custom list: show only the selected blocks, in the configured order
+    site_settings['home_page']['catalogue_blocks_list'] = %w[spaces events materials]
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue ul.catalogue li', count: 3
+      assert_select 'section#catalogue ul.catalogue li h3', text: I18n.t('features.spaces.long').titleize
+      assert_select 'section#catalogue ul.catalogue li h3', text: I18n.t('features.events.long').titleize
+      assert_select 'section#catalogue ul.catalogue li h3', text: I18n.t('features.materials.long').titleize
+      assert_select 'section#catalogue h3', text: I18n.t('features.trainers.long').titleize, count: 0
+    end
+
+    # unknown blocks are ignored
+    site_settings['home_page']['catalogue_blocks_list'] = %w[events does_not_exist]
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue ul.catalogue li', count: 1
+    end
+
+    # blocks whose feature is disabled are ignored
+    with_settings({ site: site_settings, feature: { spaces: false } }) do
+      site_settings['home_page']['catalogue_blocks_list'] = %w[spaces events]
+      get :home
+      assert_select 'section#catalogue ul.catalogue li', count: 1
+    end
+  end
+
   test 'should show promo blocks next to the welcome section when configured' do
     plant_space = spaces(:plants)
     site_settings = TeSS::Config.site.dup
