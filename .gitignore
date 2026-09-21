@@ -43,3 +43,6 @@ tess.crontab
 
 app-secrets*
 node_modules/
+
+# Sass/Sprockets compile caches
+.sass-cache/
