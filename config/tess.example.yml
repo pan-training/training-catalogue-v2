@@ -115,6 +115,10 @@ default: &default
       # Available blocks: events, materials, learning_paths, trainers, spaces, workflows
       # Leave blank to show the default blocks (events, materials, learning_paths, trainers).
       catalogue_blocks_list: # e.g. ['spaces', 'events', 'materials']
+      # When true, the catalogue block links include the across_all_spaces=true
+      # option, so they show resources from all spaces instead of only the
+      # current space. Defaults to false.
+      catalogue_blocks_show_all: false
       provider_grid: false
       provider_carousel: true
       # A list of content provider IDs to show in the front page carousel. Leave blank to show latest 5 (that have avatars set)

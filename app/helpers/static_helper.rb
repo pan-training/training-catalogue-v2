@@ -52,6 +52,14 @@ module StaticHelper
     configured.select { |key| CATALOGUE_BLOCKS.include?(key) && feature_enabled?(key) }
   end
 
+  # Whether the catalogue block links should include the `across_all_spaces=true`
+  # option, so they show resources from all spaces instead of only the current one.
+  # Controlled by the `home_page.catalogue_blocks_show_all` config.
+  # Defaults to false (links point to the current space only, as before).
+  def catalogue_blocks_show_all?
+    TeSS::Config.site.dig('home_page', 'catalogue_blocks_show_all') == true
+  end
+
   HOME_PAGE_SECTION_DEFAULTS = {
     'catalogue_blocks' => { default_space_only: true },
     'provider_carousel' => { default_space_only: true },

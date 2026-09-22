@@ -297,6 +297,38 @@ class StaticControllerTest < ActionController::TestCase
     end
   end
 
+  test 'should include across_all_spaces in catalogue block links when catalogue_blocks_show_all is set' do
+    site_settings = TeSS::Config.site.dup
+    site_settings['home_page'] = {
+      'catalogue_blocks': true,
+      'catalogue_blocks_list': %w[events materials],
+      'provider_carousel': false,
+      'featured_providers': nil,
+      'faq': [],
+      'promo_blocks': false,
+      'search_box': false
+    }
+
+    # default (false): links point to the current space only
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', events_path
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', materials_path
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', events_path(across_all_spaces: true), count: 0
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', materials_path(across_all_spaces: true), count: 0
+    end
+
+    # true: links include across_all_spaces=true
+    site_settings['home_page']['catalogue_blocks_show_all'] = true
+    with_settings({ site: site_settings }) do
+      get :home
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', events_path(across_all_spaces: true)
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', materials_path(across_all_spaces: true)
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', events_path, count: 0
+      assert_select 'section#catalogue ul.catalogue li a[href=?]', materials_path, count: 0
+    end
+  end
+
   test 'should show promo blocks next to the welcome section when configured' do
     plant_space = spaces(:plants)
     site_settings = TeSS::Config.site.dup

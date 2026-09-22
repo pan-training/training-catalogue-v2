@@ -1,4 +1,5 @@
 <% features = catalogue_blocks_list %>
+<% link_options = catalogue_blocks_show_all? ? { across_all_spaces: true } : {} %>
 
 <section id="catalogue">
   <h2 class="text-center"><%= t('home.catalogue.title') %></h2>
@@ -6,7 +7,7 @@
   <ul class="catalogue<%= ' catalogue-even' if features.count.even? %>">
     <% features.each do |feature| %>
       <li class="resource-type">
-        <%= link_to polymorphic_path(feature), class: 'link-overlay' do %>
+        <%= link_to polymorphic_path(feature, link_options), class: 'link-overlay' do %>
           <div class="resource-type-title">
             <%= image_tag("#{theme_path}/icons/#{feature.dasherize}-icon.svg", alt: feature.titleize) %>
             <h3><%= t("features.#{feature}.long").titleize %></h3>
