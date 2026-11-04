@@ -19,18 +19,32 @@ var SourceFilters = {
         return false; // Stop form being submitted
     },
 
+    // Shows the value field belonging to the selected property. The other fields stay
+    // disabled so that only one "value" parameter is submitted for this row.
+    updateValueTypeForProperty: function (filterRow) {
+        var targetValueType = filterRow.find('select[name$="[property]"] option:selected').data('value-type');
+
+        filterRow.find('.source-filter-value').each(function () {
+            var valueFieldGroup = $(this);
+            var valueInput = valueFieldGroup.find(':input');
+            var matchesTargetType = valueFieldGroup.data('value-type') === targetValueType;
+
+            valueInput.prop('disabled', !matchesTargetType);
+            valueFieldGroup.toggle(matchesTargetType);
+        });
+    },
+
     delete: function () {
         $(this).parents('.source-filter-form').fadeOut().find("input[name$='[_destroy]']").val("true");
     }
 };
 
 document.addEventListener("turbolinks:load", function () {
-    $('#source-filters')
-        .on('click', '#add-source-filter-btn', SourceFilters.add)
-        .on('click', '#add-source-filter-btn-label', SourceFilters.add)
-        .on('click', '.delete-source-filter-btn', SourceFilters.delete);
-    $('#source-block-filters')
-        .on('click', '#add-source-block-filter-btn', SourceFilters.addBlockFilter)
-        .on('click', '#add-source-block-filter-btn-label', SourceFilters.addBlockFilter)
-        .on('click', '.delete-source-filter-btn', SourceFilters.delete);
+    $('#source-filters, #source-block-filters')
+        .on('click', '#add-source-filter-btn, #add-source-filter-btn-label', SourceFilters.add)
+        .on('click', '#add-source-block-filter-btn, #add-source-block-filter-btn-label', SourceFilters.addBlockFilter)
+        .on('click', '.delete-source-filter-btn', SourceFilters.delete)
+        .on('change', 'select[name$="[property]"]', function () {
+            SourceFilters.updateValueTypeForProperty($(this).closest('.source-filter-form'));
+        });
 });

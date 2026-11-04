@@ -160,6 +160,37 @@ class SourcesControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'source filters render the value control matching their property type in both lists' do
+    sign_in @user
+    filters = [
+      ['allow', 'title', 'Example title', 'text', 'input[type="text"]'],
+      ['allow', 'language', 'en', 'language', 'select'],
+      ['allow', 'date_published_after', '2026-01-01', 'date', 'input[type="date"]'],
+      ['block', 'date_published_before', '2026-12-31', 'date', 'input[type="date"]']
+    ].map do |mode, property, value, type, selector|
+      [@source.source_filters.create!(mode: mode, property: property, value: value), type, selector]
+    end
+
+    get :edit, params: { id: @source }
+    assert_response :success
+
+    filters.each do |filter, type, selector|
+      list = filter.allow? ? '#source-filter-list' : '#source-block-list'
+      assert_select "#{list} .source-filter-form[data-id-in-filter-list='#{filter.id}']" do
+        assert_select 'option[selected][value=?][data-value-type=?]', filter.property, type
+        assert_select '.source-filter-value', count: 3
+        assert_select '.source-filter-value[style="display: none;"] [name$="[value]"][disabled]', count: 2
+
+        assert_select '.source-filter-value:not([style])' do
+          control = assert_select("#{selector}:not([disabled])", count: 1).first
+          assert_select 'label[for=?]', control['id']
+          value = control.name == 'select' ? control.at_css('option[selected]')['value'] : control['value']
+          assert_equal filter.value, value
+        end
+      end
+    end
+  end
+
   test 'user should get edit for approved source' do
     source = sources(:first_source)
     user = source.user

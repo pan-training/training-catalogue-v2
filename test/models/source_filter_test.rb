@@ -58,6 +58,16 @@ class SourceFilterTest < ActiveSupport::TestCase
     assert_nil SourceFilter.new(property: 'title').nested_property
   end
 
+  test 'value type is taken from the filter definition' do
+    assert_equal :language, SourceFilter.new(property: 'language').value_type
+    assert_equal :date, SourceFilter.new(property: 'date_published_after').value_type
+    assert_equal :date, SourceFilter.new(property: 'date_published_before').value_type
+    assert_equal :text, SourceFilter.new(property: 'title').value_type
+
+    assert_equal :text, SourceFilter.new.value_type
+    assert_equal :text, SourceFilter.value_type_for(nil), 'unset property should fall back to text'
+  end
+
   test 'nested properties are matched through their parent association' do
     item = OpenStruct.new(
       authors: [

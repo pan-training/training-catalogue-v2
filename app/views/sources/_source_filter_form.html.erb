@@ -1,7 +1,22 @@
 <div class="form-inline source-filter-form" data-id-in-filter-list="<%= f.options[:child_index] %>">
-  <%= f.input :property, collection: SourceFilter.properties.keys.map { |t| [t.humanize, t] }, include_blank: false, required: false %>
+  <%= f.input :property,
+              collection: SourceFilter.properties.keys.map { |property|
+                [property.humanize, property, { 'data-value-type' => SourceFilter.value_type_for(property) }]
+              },
+              include_blank: false, required: false %>
 
-  <%= f.input :value %>
+  <% value_type = f.object.value_type %>
+  <% {
+    text: { as: :string },
+    language: { as: :select, collection: LanguageDictionary.instance.options_for_select, include_blank: true },
+    date: { as: :date, html5: true, wrapper: :vertical_form }
+  }.each do |type, options| %>
+    <%= f.input :value, **options,
+                wrapper_html: { class: 'source-filter-value', data: { value_type: type },
+                                style: type == value_type ? nil : 'display: none;' },
+                input_html: { id: "#{f.object_name.parameterize(separator: '_', preserve_case: true)}_value_#{type}",
+                              disabled: type != value_type } %>
+  <% end %>
 
   <%= f.input :mode, collection: SourceFilter.modes.keys.map { |m| [m.humanize, m] }, include_blank: false, as: :hidden %>
 

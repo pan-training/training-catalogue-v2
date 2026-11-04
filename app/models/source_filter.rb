@@ -139,8 +139,6 @@ FILTER_DEFINITIONS = {
     comparison: FilterComparisons.method(:string_match)
   },
 
-  # New properties
-
   'author_name' => {
     comparison: FilterComparisons.method(:array_string_match),
     filter_property: 'authors',
@@ -195,6 +193,7 @@ FILTER_DEFINITIONS = {
 
   'language' => {
     comparison: FilterComparisons.method(:string_match),
+    value_type: :language
   },
 
   'scientific_topic' => {
@@ -205,12 +204,14 @@ FILTER_DEFINITIONS = {
 
   'date_published_after' => {
     comparison: FilterComparisons.method(:date_after_match),
-    filter_property: 'date_published'
+    filter_property: 'date_published',
+    value_type: :date
   },
 
   'date_published_before' => {
     comparison: FilterComparisons.method(:date_before_match),
-    filter_property: 'date_published'
+    filter_property: 'date_published',
+    value_type: :date
   },
 
   'external_resource_name' => {
@@ -246,6 +247,10 @@ class SourceFilter < ApplicationRecord
     block: 'block'
   }
 
+  def self.value_type_for(property)
+    FILTER_DEFINITIONS.dig(property.to_s, :value_type) || :text
+  end
+
   def match(item)
     filter_definition[:comparison].call(filter_value_for(item), value.to_s)
   end
@@ -261,6 +266,10 @@ class SourceFilter < ApplicationRecord
   # Compare against item.<filter_property>.<nested_property>, if present.
   def nested_property
     filter_definition[:nested_property]
+  end
+
+  def value_type
+    self.class.value_type_for(property)
   end
 
   private
