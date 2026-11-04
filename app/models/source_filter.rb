@@ -16,6 +16,36 @@ module FilterComparisons
     return false if content_value.nil?
     content_value.any? { |i| i.to_s.casecmp?(filter_value) }
   end
+
+  def self.array_contains_string_match(content_value, filter_value)
+    return false if content_value.nil?
+    content_value.any? { |i| i.to_s.downcase.include?(filter_value.downcase) }
+  end
+
+  def self.array_prefix_string_match(content_value, filter_value)
+    return false if content_value.nil?
+    content_value.any? { |i| i.to_s.downcase.start_with?(filter_value.downcase) }
+  end
+
+  def self.date_after_match(content_value, filter_value)
+    Date.parse(content_value.to_s) > Date.parse(filter_value.to_s)
+  rescue ArgumentError, TypeError
+    false
+  end
+
+  def self.date_before_match(content_value, filter_value)
+    Date.parse(content_value.to_s) < Date.parse(filter_value.to_s)
+  rescue ArgumentError, TypeError
+    false
+  end
+
+  def self.orcid_match(content_value, filter_value)
+    return false if content_value.nil?
+
+    normalize_orcid = ->(value) { value.to_s.strip.sub(%r{\Ahttps?://orcid\.org/}i, '') }
+    filter_orcid = normalize_orcid.call(filter_value)
+    content_value.any? { |i| normalize_orcid.call(i).casecmp?(filter_orcid) }
+  end
 end
 
 
@@ -107,6 +137,98 @@ FILTER_DEFINITIONS = {
 
   'timezone' => {
     comparison: FilterComparisons.method(:string_match)
+  },
+
+  # New properties
+
+  'author_name' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'authors',
+    nested_property: 'name'
+  },
+
+  'author_name_contains' => {
+    comparison: FilterComparisons.method(:array_contains_string_match),
+    filter_property: 'authors',
+    nested_property: 'name'
+  },
+
+  'author_orcid' => {
+    comparison: FilterComparisons.method(:orcid_match),
+    filter_property: 'authors',
+    nested_property: 'orcid'
+  },
+
+  'instructor_name' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'instructors',
+    nested_property: 'name'
+  },
+
+  'instructor_orcid' => {
+    comparison: FilterComparisons.method(:orcid_match),
+    filter_property: 'instructors',
+    nested_property: 'orcid'
+  },
+
+  'contributor_name' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'contributors',
+    nested_property: 'name'
+  },
+
+  'contributor_orcid' => {
+    comparison: FilterComparisons.method(:orcid_match),
+    filter_property: 'contributors',
+    nested_property: 'orcid'
+  },
+
+  'organizer' => {
+    comparison: FilterComparisons.method(:string_match),
+  },
+
+  'content_provider_name' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'content_provider',
+    nested_property: 'title'
+  },
+
+  'language' => {
+    comparison: FilterComparisons.method(:string_match),
+  },
+
+  'scientific_topic' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'scientific_topics',
+    nested_property: 'label'
+  },
+
+  'date_published_after' => {
+    comparison: FilterComparisons.method(:date_after_match),
+    filter_property: 'date_published'
+  },
+
+  'date_published_before' => {
+    comparison: FilterComparisons.method(:date_before_match),
+    filter_property: 'date_published'
+  },
+
+  'external_resource_name' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'external_resources',
+    nested_property: 'title'
+  },
+
+  'external_resource_url' => {
+    comparison: FilterComparisons.method(:array_string_match),
+    filter_property: 'external_resources',
+    nested_property: 'url'
+  },
+
+  'external_resource_url_prefix' => {
+    comparison: FilterComparisons.method(:array_prefix_string_match),
+    filter_property: 'external_resources',
+    nested_property: 'url'
   }
 }.freeze
 
@@ -125,9 +247,7 @@ class SourceFilter < ApplicationRecord
   }
 
   def match(item)
-    val = nil
-    val = item.send(filter_property) if item.respond_to?(filter_property)
-    filter_definition[:comparison].call(val, value.to_s)
+    filter_definition[:comparison].call(filter_value_for(item), value.to_s)
   end
 
   def filter_definition 
@@ -136,5 +256,24 @@ class SourceFilter < ApplicationRecord
 
   def filter_property
     filter_definition[:filter_property] || property
+  end
+
+  # Compare against item.<filter_property>.<nested_property>, if present.
+  def nested_property
+    filter_definition[:nested_property]
+  end
+
+  private
+
+  def filter_value_for(item)
+    return nil unless item.respond_to?(filter_property)
+
+    content_value = item.send(filter_property)
+    return content_value unless nested_property
+
+    values = content_value.is_a?(Enumerable) ? content_value : [content_value]
+    values.filter_map do |nested_item|
+      nested_item.send(nested_property) if nested_item.respond_to?(nested_property)
+    end
   end
 end
